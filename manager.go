@@ -60,11 +60,13 @@ func (sm *Manager) Get(r *http.Request, w http.ResponseWriter) (s *Session) {
 		sm.Unlock()
 	}
 	http.SetCookie(w, &http.Cookie{
-		Name:   "session",
-		Value:  s.ID,
-		Path:   "/",
-		MaxAge: s.ttl(),
-		Secure: r.TLS != nil,
+		Name:     "session",
+		Value:    s.ID,
+		Path:     "/",
+		MaxAge:   s.ttl(),
+		Secure:   r.TLS != nil,
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
 	})
 	return
 }
