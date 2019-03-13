@@ -20,13 +20,13 @@ func NewManager(cfg *Config) *Manager {
 	go func() {
 		for {
 			time.Sleep(time.Minute)
+			sm.Lock()
 			for n, s := range sm.reg {
 				if s.TTL() <= 0 {
-					sm.Lock()
 					delete(sm.reg, n)
-					sm.Unlock()
 				}
 			}
+			sm.Unlock()
 			sm.saveSessions()
 		}
 	}()
