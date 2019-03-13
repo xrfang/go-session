@@ -65,7 +65,7 @@ func (sm *Manager) loadSessions() {
 		s.unpack(d)
 		if s.ID != "" {
 			s.mgr = sm
-			sm.reg[s.ID] = &s
+			sm.reg[s.ID] = s
 		}
 	}
 }
