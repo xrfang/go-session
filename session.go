@@ -36,6 +36,14 @@ func (s Session) Get(name string, value interface{}) bool {
 	return true
 }
 
+func (s *Session) Del(name string) {
+	s.upd = time.Now()
+	delete(s.arg, name)
+	s.mgr.Lock()
+	s.mgr.reg[s.ID] = *s
+	s.mgr.Unlock()
+}
+
 func (s *Session) Set(name string, value interface{}) {
 	s.upd = time.Now()
 	s.arg[name] = value
