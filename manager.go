@@ -9,24 +9,24 @@ import (
 
 type Manager struct {
 	cfg Config
-	reg map[string]*Session
+	reg map[string]Session
 	sync.RWMutex
 }
 
 func NewManager(cfg *Config) *Manager {
-	sm := Manager{reg: make(map[string]*Session)}
+	sm := Manager{reg: make(map[string]Session)}
 	sm.setConfig(cfg)
 	sm.loadSessions()
 	go func() {
 		for {
 			time.Sleep(time.Minute)
+			sm.Lock()
 			for n, s := range sm.reg {
-				if s.ttl() <= 0 {
-					sm.Lock()
+				if s.TTL() <= 0 {
 					delete(sm.reg, n)
-					sm.Unlock()
 				}
 			}
+			sm.Unlock()
 			if sm.cfg.Persist != "" {
 				sm.saveSessions()
 			}
@@ -35,7 +35,7 @@ func NewManager(cfg *Config) *Manager {
 	return &sm
 }
 
-func (sm *Manager) Get(r *http.Request, w http.ResponseWriter) (s *Session) {
+func (sm *Manager) Get(w http.ResponseWriter, r *http.Request) (s Session) {
 	from, _, _ := net.SplitHostPort(r.RemoteAddr)
 	sessionID := r.URL.Query().Get("session")
 	if sessionID == "" {
@@ -49,8 +49,8 @@ func (sm *Manager) Get(r *http.Request, w http.ResponseWriter) (s *Session) {
 		s = sm.reg[sessionID]
 		sm.RUnlock()
 	}
-	if s == nil || s.src != from || s.ttl() <= 0 {
-		s = &Session{
+	if s.ID == "" || s.src != from || s.TTL() <= 0 {
+		s = Session{
 			ID:  uuid(16),
 			src: from,
 			upd: time.Now(),
@@ -65,7 +65,7 @@ func (sm *Manager) Get(r *http.Request, w http.ResponseWriter) (s *Session) {
 		Name:     "session",
 		Value:    s.ID,
 		Path:     "/",
-		MaxAge:   s.ttl(),
+		MaxAge:   s.TTL(),
 		Secure:   r.TLS != nil,
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
