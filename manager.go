@@ -27,7 +27,9 @@ func NewManager(cfg *Config) *Manager {
 					sm.Unlock()
 				}
 			}
-			sm.saveSessions()
+			if sm.cfg.Persist != "" {
+				sm.saveSessions()
+			}
 		}
 	}()
 	return &sm

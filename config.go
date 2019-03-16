@@ -14,7 +14,6 @@ type Config struct {
 }
 
 func (sm *Manager) setConfig(cfg *Config) {
-	store := fmt.Sprintf("/run/%s-sessions", path.Base(os.Args[0]))
 	if cfg == nil {
 		sm.cfg.Refresh = true
 	} else {
@@ -26,11 +25,10 @@ func (sm *Manager) setConfig(cfg *Config) {
 	if sm.cfg.VoidTTL <= 0 {
 		sm.cfg.VoidTTL = 60
 	}
-	if sm.cfg.Persist == "" {
-		sm.cfg.Persist = store
-	}
-	err := os.MkdirAll(path.Dir(sm.cfg.Persist), 0755)
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "session.Manager.setConfig:", err)
+	if sm.cfg.Persist != "" {
+		err := os.MkdirAll(path.Dir(sm.cfg.Persist), 0755)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, "session.Manager.setConfig:", err)
+		}
 	}
 }
