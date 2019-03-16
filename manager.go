@@ -16,7 +16,9 @@ type Manager struct {
 func NewManager(cfg *Config) *Manager {
 	sm := Manager{reg: make(map[string]Session)}
 	sm.setConfig(cfg)
-	sm.loadSessions()
+	if sm.cfg.Persist != "" {
+		sm.loadSessions()
+	}
 	go func() {
 		for {
 			time.Sleep(time.Minute)
