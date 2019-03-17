@@ -1,6 +1,8 @@
 package session
 
 import (
+	"encoding/json"
+	"io"
 	"reflect"
 	"time"
 )
@@ -11,6 +13,17 @@ type Session struct {
 	upd time.Time
 	mgr *Manager
 	arg map[string]interface{}
+}
+
+func (s Session) Dump(w io.Writer) {
+	je := json.NewEncoder(w)
+	je.SetIndent("", "    ")
+	je.Encode(map[string]interface{}{
+		"id":  s.ID,
+		"src": s.src,
+		"upd": s.upd.Format(time.RFC3339),
+		"arg": s.arg,
+	})
 }
 
 func (s Session) TTL() int {
