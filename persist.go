@@ -43,7 +43,7 @@ func (s *Session) unpack(p map[string]interface{}) {
 			s.upd = t
 		}
 	}
-	s.arg, ok = p["arg"].(map[string]string)
+	s.arg, ok = p["arg"].(map[string]interface{})
 	chkType("arg")
 }
 

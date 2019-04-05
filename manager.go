@@ -57,7 +57,7 @@ func (sm *Manager) Get(w http.ResponseWriter, r *http.Request) (s Session) {
 			src: from,
 			upd: time.Now(),
 			mgr: sm,
-			arg: make(map[string]string),
+			arg: make(map[string]interface{}),
 		}
 		sm.Lock()
 		sm.reg[s.ID] = s

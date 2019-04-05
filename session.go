@@ -12,7 +12,7 @@ type Session struct {
 	src string
 	upd time.Time
 	mgr *Manager
-	arg map[string]string
+	arg map[string]interface{}
 }
 
 func (s Session) Dump(w io.Writer) {
@@ -42,7 +42,8 @@ func (s Session) Get(name string) string {
 		s.mgr.reg[s.ID] = s
 		s.mgr.Unlock()
 	}
-	return v
+	val, _ := v.(string)
+	return val
 }
 
 func (s Session) Unmarshal(name string, value interface{}) error {
