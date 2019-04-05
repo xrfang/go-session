@@ -1,6 +1,7 @@
 package session
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"time"
@@ -44,6 +45,14 @@ func (s Session) Get(name string) string {
 	return v
 }
 
+func (s Session) Unmarshal(name string, value interface{}) error {
+	val := s.Get(name)
+	if val == "" {
+		return io.ErrUnexpectedEOF
+	}
+	return json.Unmarshal([]byte(val), value)
+}
+
 func (s *Session) Set(name string, value string) {
 	s.upd = time.Now()
 	if value == "" {
@@ -54,4 +63,14 @@ func (s *Session) Set(name string, value string) {
 	s.mgr.Lock()
 	s.mgr.reg[s.ID] = *s
 	s.mgr.Unlock()
+}
+
+func (s *Session) Marshal(name string, value interface{}) error {
+	var buf bytes.Buffer
+	err := json.NewEncoder(&buf).Encode(value)
+	if err != nil {
+		return err
+	}
+	s.Set(name, buf.String())
+	return nil
 }
