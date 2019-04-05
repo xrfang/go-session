@@ -3,7 +3,6 @@ package session
 import (
 	"encoding/json"
 	"io"
-	"reflect"
 	"time"
 )
 
@@ -12,7 +11,7 @@ type Session struct {
 	src string
 	upd time.Time
 	mgr *Manager
-	arg map[string]interface{}
+	arg map[string]string
 }
 
 func (s Session) Dump(w io.Writer) {
@@ -34,32 +33,24 @@ func (s Session) TTL() int {
 	return ttl - int(time.Now().Sub(s.upd).Seconds())
 }
 
-func (s Session) Get(name string, value interface{}) bool {
+func (s Session) Get(name string) string {
 	v := s.arg[name]
-	if v == nil {
-		return false
-	}
-	reflect.ValueOf(value).Elem().Set(reflect.ValueOf(v))
-	if s.mgr.cfg.Refresh {
+	if v != "" && s.mgr.cfg.Refresh {
 		s.upd = time.Now()
 		s.mgr.Lock()
 		s.mgr.reg[s.ID] = s
 		s.mgr.Unlock()
 	}
-	return true
+	return v
 }
 
-func (s *Session) Del(name string) {
+func (s *Session) Set(name string, value string) {
 	s.upd = time.Now()
-	delete(s.arg, name)
-	s.mgr.Lock()
-	s.mgr.reg[s.ID] = *s
-	s.mgr.Unlock()
-}
-
-func (s *Session) Set(name string, value interface{}) {
-	s.upd = time.Now()
-	s.arg[name] = value
+	if value == "" {
+		delete(s.arg, name)
+	} else {
+		s.arg[name] = value
+	}
 	s.mgr.Lock()
 	s.mgr.reg[s.ID] = *s
 	s.mgr.Unlock()
