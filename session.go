@@ -55,13 +55,13 @@ func (s Session) Unmarshal(name string, value interface{}) error {
 }
 
 func (s *Session) Set(name string, value string) {
+	s.mgr.Lock()
 	s.upd = time.Now()
 	if value == "" {
 		delete(s.arg, name)
 	} else {
 		s.arg[name] = value
 	}
-	s.mgr.Lock()
 	s.mgr.reg[s.ID] = *s
 	s.mgr.Unlock()
 }
